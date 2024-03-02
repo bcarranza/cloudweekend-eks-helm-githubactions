@@ -1,0 +1,28 @@
+name: Create EKS Cluster on AWS 
+
+on:
+  workflow_dispatch:
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      - name: 'Configure AWS credentials from p1 account'
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT }}:role/github_oidc
+          role-session-name: githubAWSSession
+          role-duration-seconds: 3600
+          aws-region: ${{ env.AWS_REGION }}
+        
+      - name: Install eksctl 
+        uses: moia-oss/setup-eksctl@v1
+        
+      - name: Make script executable
+        run: chmod +x eksctl/create_cluster.sh
+
+      - name: Execute script
+        run: ./eksctl/create_cluster.sh
