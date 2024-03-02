@@ -2,15 +2,18 @@ name: Create EKS Cluster on AWS
 
 on:
   workflow_dispatch:
+env: 
+  AWS_REGION: 'us-east-1'
+  AWS_ACCOUNT: '056026006387'
 
 jobs:
-  greet:
+  Create:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v2
       
-      - name: 'Configure AWS credentials from p1 account'
+      - name: 'Configure AWS credentials'
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT }}:role/github_oidc
