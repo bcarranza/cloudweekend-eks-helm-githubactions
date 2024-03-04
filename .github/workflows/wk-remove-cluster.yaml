@@ -1,0 +1,43 @@
+name: Remove EKS Cluster on AWS 
+
+on:
+  workflow_dispatch:
+env: 
+  AWS_REGION: 'us-east-1'
+  AWS_ACCOUNT: '493667426232'
+
+# Used for getting permissions to AWS resources through an OIDC federation
+permissions:
+  id-token: write
+  contents: read    # This is required for actions/checkout@v3
+
+jobs:
+  Create:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      - name: 'Configure AWS credentials'
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT }}:role/github_oidc
+          role-session-name: githubAWSSession
+          role-duration-seconds: 3600
+          aws-region: ${{ env.AWS_REGION }}
+        
+      - name: Install eksctl 
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          # (Optional) Verify checksum
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo mv /tmp/eksctl /usr/local/bin
+          
+      - name: Make script executable
+        run: chmod +x eksctl/remove_cluster.sh
+
+      - name: Execute script
+        run: ./eksctl/remove_cluster.sh
