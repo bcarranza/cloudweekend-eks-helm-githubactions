@@ -18,7 +18,6 @@ module "iam_assumable_role_admin" {
   provider_url                  = var.url
   role_policy_arns              = [aws_iam_policy.iam_policy.arn]
   oidc_fully_qualified_subjects = var.validate_conditions
-  oidc_subjects_with_wildcards  = var.validate_wildcard_conditions
   tags                          = var.tags
 }
 

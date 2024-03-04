@@ -46,12 +46,6 @@ variable "validate_conditions" {
   default     = ["repo:bcarranza/cloudweekend-eks-helm-githubactions:ref:refs/heads/main"]
 }
 
-variable "validate_wildcard_conditions" {
-  description = "Conditions to validate, that include wildcards"
-  type        = set(string)
-  default     = ["repo:octo-org/octo-repo:ref:refs/heads/feature/*"]
-}
-
 variable "tags" {
   type        = map(any)
   default     = {}
