@@ -6,6 +6,11 @@ env:
   AWS_REGION: 'us-east-1'
   AWS_ACCOUNT: '493667426232'
 
+# Used for getting permissions to AWS resources through an OIDC federation
+permissions:
+  id-token: write
+  contents: read    # This is required for actions/checkout@v3
+  
 jobs:
   Create:
     runs-on: ubuntu-latest
