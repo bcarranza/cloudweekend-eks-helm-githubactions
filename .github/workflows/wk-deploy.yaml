@@ -2,7 +2,10 @@ name: Deploy to ECR
 
 on:
   push:
-    branches: [ master ]
+    paths:
+    - 'code/**'
+    branches:
+      - main
 
 env:
   ECR_REPOSITORY: flask-app
