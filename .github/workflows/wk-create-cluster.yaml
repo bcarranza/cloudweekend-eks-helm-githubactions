@@ -10,7 +10,7 @@ env:
 permissions:
   id-token: write
   contents: read    # This is required for actions/checkout@v3
-  
+
 jobs:
   Create:
     runs-on: ubuntu-latest
@@ -27,8 +27,15 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
         
       - name: Install eksctl 
-        uses: moia-oss/setup-eksctl@v1
-        
+        run: |
+          ARCH=amd64
+          PLATFORM=$(uname -s)_$ARCH
+          curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+          # (Optional) Verify checksum
+          curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+          tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+          sudo mv /tmp/eksctl /usr/local/bin
+          
       - name: Make script executable
         run: chmod +x eksctl/create_cluster.sh
 
