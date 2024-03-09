@@ -1,5 +1,6 @@
 name: Deploy to ECR
 
+# Trigger the workflow on push events to the main branch in the 'code' directory
 on:
   push:
     paths:
@@ -7,11 +8,12 @@ on:
     branches:
       - main
 
+# Define environment variables using GitHub secrets
 env:
-  ECR_REPOSITORY: flask-app
-  EKS_CLUSTER_NAME: k8s-UAEH 
-  AWS_ACCOUNT: '493667426232'
-  AWS_REGION: us-east-1
+  ECR_REPOSITORY: flask-app # Hardcoded ECR repository name
+  EKS_CLUSTER_NAME: k8s-UAEH # Hardcoded EKS cluster name
+  AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
   
 # Used for getting permissions to AWS resources through an OIDC federation
 permissions:
@@ -19,47 +21,53 @@ permissions:
   contents: read    # This is required for actions/checkout@v3
 
 jobs:
-  
   build:
     name: Deployment
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set short git commit SHA
-      id: commit
-      uses: prompt/actions-commit-hash@v2
+      # Set short git commit SHA
+      - name: Set short git commit SHA
+        id: commit
+        uses: prompt/actions-commit-hash@v2
 
-    - name: Check out code
-      uses: actions/checkout@v2
-    
-    - name: 'Configure AWS credentials'
-      uses: aws-actions/configure-aws-credentials@v1.7.0
-      with:
-        role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT }}:role/github_oidc
-        role-session-name: githubAWSSession
-        role-duration-seconds: 3600
-        aws-region: ${{ env.AWS_REGION }}
+      # Check out code
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      # Configure AWS credentials using assumed role
+      - name: 'Configure AWS credentials'
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT }}:role/github_oidc
+          role-session-name: githubAWSSession
+          role-duration-seconds: 3600
+          aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      # Login to Amazon ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}        
-        IMAGE_TAG: ${{ steps.commit.outputs.short }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      # Build, tag, and push image to Amazon ECR
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}        
+          IMAGE_TAG: ${{ steps.commit.outputs.short }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Update kube config
-      run: aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
+      # Update kube config
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
 
-    - name: Deploy to EKS
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}        
-        IMAGE_TAG: ${{ steps.commit.outputs.short }}
-      run: |
-        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" k8s/hello-app-deployment.yaml && \
-        kubectl apply -f k8s/hello-app-deployment.yaml
-        kubectl apply -f k8s/hello-app-service.yaml
+      # Deploy to EKS
+      - name: Deploy to EKS
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}        
+          IMAGE_TAG: ${{ steps.commit.outputs.short }}
+        run: |
+          sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" k8s/hello-app-deployment.yaml && \
+          kubectl apply -f k8s/hello-app-deployment.yaml
+          kubectl apply -f k8s/hello-app-service.yaml
