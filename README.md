@@ -32,7 +32,10 @@ To manually create a cluster, follow these steps:
 - Find the workflow for creating a cluster and run it manually.
 - Monitor the progress and troubleshoot any issues as needed.
 
-4. Modifying Python Code and Deployment Pipeline
+5. Crate the Aws ECR Repo
+To be able to store docker images in aws ecr, you should create it there.
+
+6. Modifying Python Code and Deployment Pipeline
 To modify the Python code and trigger the deployment pipeline, follow these steps:
 
 - Make changes to the Python code located in the ./code/ directory.
