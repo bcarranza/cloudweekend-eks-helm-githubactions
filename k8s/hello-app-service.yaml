@@ -1,15 +1,18 @@
-apiVersion: v1
-kind: Service
+# This YAML defines a Kubernetes service for the "hello-app" deployment.
+# It makes the application accessible via a network.
+apiVersion: v1 # Specifies the API version for the service.
+kind: Service # Defines the kind of resource, in this case, a Service.
 metadata:
-  name: kubernetes-demo-hello-app-service
-  labels:
-    app: hello-app 
-spec:
+  name: kubernetes-demo-hello-app-service # The name of the service.
+  labels: # Labels applied to this service for organization and selection.
+    app: hello-app
+
+spec: # Specification of the desired behavior of the service.
   selector:
-    app: hello-app 
+    app: hello-app # Selects the pods with these labels to expose through this service.
 
   ports:
-    - port: 8080
-      targetPort: 8080
+    - port: 8080 # The port that this service exposes.
+      targetPort: 8080 # The target port on the pod(s) to which requests will be sent.
 
-  type: LoadBalancer
+  type: LoadBalancer # Specifies the type of service. LoadBalancer exposes the service externally through a cloud provider's load balancer.
