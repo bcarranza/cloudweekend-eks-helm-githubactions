@@ -1,29 +1,31 @@
-apiVersion: apps/v1 
-kind: Deployment
+# This YAML defines a Kubernetes deployment for a demo application named "hello-app".
+apiVersion: apps/v1 # Specifies the API version for deployment.
+kind: Deployment # Defines the kind of resource, in this case, a Deployment.
 metadata:
-  name: kubernetes-demo-hello-app
-  labels: 
-     app: hello-app
+  name: kubernetes-demo-hello-app # The name of the deployment.
+  labels: # Labels applied to this deployment, used for organizing and selecting subsets of objects.
+    app: hello-app
 
-spec:
-  replicas: 1 
+spec: # Specification of the desired behavior of the deployment.
+  replicas: 1  # The number of desired replica pods running the application.
   selector:
-    matchLabels:
+    matchLabels: # This deployment will manage pods having labels that match these.
       app: hello-app
 
-  template:
+  template: # Template for the pods the deployment manages. It describes the pod that will be created.
     metadata:
-      labels:
+      labels: # Labels applied to this pod, which must match the selector above.
         app: hello-app
-    spec:
+    spec: # Specification of the pod's containers and volumes.
       containers:
-      - name: hello-app
-        image: DOCKER_IMAGE
-        imagePullPolicy: Always
+      - name: hello-app # The name of the container within the pod.
+        image: DOCKER_IMAGE # The Docker image for the application, replace DOCKER_IMAGE with the actual image name.
+        imagePullPolicy: Always # The image pull policy, set to always pull the image.
         ports:
-        - containerPort: 8080
-  strategy:
-    type: RollingUpdate
+        - containerPort: 8080 # The port the container exposes.
+
+  strategy: # The deployment strategy to replace old Pods with new ones.
+    type: RollingUpdate # The rolling update strategy: updates pods in a rolling fashion.
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+      maxSurge: 1 # The maximum number of pods that can be created over the desired number of pods.
+      maxUnavailable: 1 # The maximum number of pods that can be unavailable during the update process.
