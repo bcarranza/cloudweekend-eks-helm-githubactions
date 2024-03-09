@@ -8,7 +8,7 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
     # Define the view function that returns the response for the route
-    return '<h1>Hello Earth</h2>'
+    return '<h1>Hello World</h2>'
 
 # Ensure that the Flask application is run only if the script is executed directly
 if __name__ == "__main__":
