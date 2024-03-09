@@ -1,12 +1,15 @@
-name: Create EKS Cluster on AWS 
+name: Create EKS Cluster on AWS
 
+# Trigger the workflow manually
 on:
   workflow_dispatch:
-env: 
-  AWS_REGION: 'us-east-1'
-  AWS_ACCOUNT: '493667426232'
 
-# Used for getting permissions to AWS resources through an OIDC federation
+# Define environment variables using GitHub secrets
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+
+# Define permissions for accessing AWS resources
 permissions:
   id-token: write
   contents: read    # This is required for actions/checkout@v3
@@ -18,6 +21,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
       
+      # Configure AWS credentials using assumed role
       - name: 'Configure AWS credentials'
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
@@ -26,6 +30,7 @@ jobs:
           role-duration-seconds: 3600
           aws-region: ${{ env.AWS_REGION }}
         
+      # Install eksctl tool for managing EKS clusters
       - name: Install eksctl 
         run: |
           ARCH=amd64
@@ -36,8 +41,10 @@ jobs:
           tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
           sudo mv /tmp/eksctl /usr/local/bin
           
+      # Make the script executable
       - name: Make script executable
         run: chmod +x eksctl/create_cluster.sh
 
+      # Execute the script to create the EKS cluster
       - name: Execute script
         run: ./eksctl/create_cluster.sh
