@@ -27,7 +27,7 @@ variable "thumbprint_list" {
 # Variable for specifying the AWS policy in JSON format
 variable "aws_policy_json" {
   description = "The AWS policy in a json format"  # Description of the variable
-  default     = <<-EOT                             # Default value for the variable
+  default     = <<-EOT
 {
     "Version": "2012-10-17",
     "Statement": [
