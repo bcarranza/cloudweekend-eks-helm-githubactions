@@ -1,10 +1,13 @@
-name: Remove EKS Cluster on AWS 
+name: Remove EKS Cluster on AWS
 
+# Trigger the workflow manually
 on:
   workflow_dispatch:
-env: 
-  AWS_REGION: 'us-east-1'
-  AWS_ACCOUNT: '493667426232'
+
+# Define environment variables using GitHub secrets
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
 
 # Used for getting permissions to AWS resources through an OIDC federation
 permissions:
@@ -12,12 +15,14 @@ permissions:
   contents: read    # This is required for actions/checkout@v3
 
 jobs:
-  Create:
+  Remove:
     runs-on: ubuntu-latest
     steps:
+      # Check out code
       - name: Check out code
         uses: actions/checkout@v2
       
+      # Configure AWS credentials using assumed role
       - name: 'Configure AWS credentials'
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
@@ -26,6 +31,7 @@ jobs:
           role-duration-seconds: 3600
           aws-region: ${{ env.AWS_REGION }}
         
+      # Install eksctl 
       - name: Install eksctl 
         run: |
           ARCH=amd64
@@ -36,8 +42,10 @@ jobs:
           tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
           sudo mv /tmp/eksctl /usr/local/bin
           
+      # Make script executable
       - name: Make script executable
         run: chmod +x eksctl/remove_cluster.sh
 
+      # Execute script to remove the EKS cluster
       - name: Execute script
         run: ./eksctl/remove_cluster.sh
